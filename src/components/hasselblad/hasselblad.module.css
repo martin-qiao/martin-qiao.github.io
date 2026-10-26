@@ -1,0 +1,289 @@
+/* Hasselblad hero presentational shell.
+   Parent composes layers inside .stage. */
+
+.stage {
+  position: relative;
+  aspect-ratio: 1280 / 720;
+  width: min(100%, 1200px);
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+/* Absolute children that fill the stage */
+.fill {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.vf {
+  position: absolute;
+  overflow: hidden;
+  /* left/top/width/height set from VF_BOUNDS via inline style */
+}
+
+.vfStack {
+  position: absolute;
+  inset: 0;
+}
+
+.vfImage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.vfIncoming {
+  animation: vfCrossfadeIn 280ms ease-out;
+}
+
+@keyframes vfCrossfadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Keep short glass crossfade even under reduced-motion (wind video is skipped). */
+@media (prefers-reduced-motion: reduce) {
+  .vfIncoming {
+    animation-duration: 200ms;
+  }
+}
+
+.title {
+  position: absolute;
+  top: 8%;
+  left: 8%;
+  margin: 0;
+  max-width: 84%;
+  font-family: var(--font-special-elite), "Special Elite", cursive;
+  font-size: clamp(0.7rem, 2.2cqi, 1.15rem);
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  color: #f5f0e6;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.85),
+    0 0 6px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+  user-select: none;
+}
+
+.dialVideo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: filter 160ms ease;
+  /* white = video visible, black = glass hole (matches vf-mask.svg) */
+  -webkit-mask-image: url("/hasselblad/vf-mask.svg");
+  -webkit-mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-image: url("/hasselblad/vf-mask.svg");
+  mask-size: 100% 100%;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-mode: luminance;
+}
+
+.stage:has(.crankHit:hover) .dialVideo,
+.stage:has(.crankHit:focus-visible) .dialVideo {
+  filter: brightness(1.18);
+}
+
+.crankHit,
+.glassHit {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.crankHit:focus-visible,
+.glassHit:focus-visible {
+  outline: 2px solid rgba(245, 240, 230, 0.85);
+  outline-offset: 2px;
+}
+
+/*
+  Fat crank hit over the RHS winding dial (approx on 1280×720 base).
+  Dial knurl ~ (900,320)–(1040,450); box padded for tap/click.
+*/
+.crankHit {
+  left: 68%;
+  top: 40%;
+  width: 16%;
+  height: 26%;
+  z-index: 5;
+}
+
+/* Subtle dial-region brightness (works even when wind video is unmounted). */
+.crankHit::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 245, 220, 0.28) 0%,
+    rgba(255, 245, 220, 0.08) 45%,
+    transparent 70%
+  );
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease;
+}
+
+.crankHit:hover::after,
+.crankHit:focus-visible::after {
+  opacity: 1;
+}
+
+/* glassHit left/top/width/height from VF_BOUNDS via inline style */
+.glassHit {
+  z-index: 5;
+}
+
+@media (max-width: 640px) {
+  .crankHit {
+    left: 64%;
+    top: 36%;
+    width: 24%;
+    height: 34%;
+  }
+}
+
+/* Section overlay: slide panel over the camera stage */
+.overlayRoot {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: flex-end;
+  pointer-events: none;
+}
+
+.overlayBackdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  appearance: none;
+  background: rgba(8, 6, 4, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  pointer-events: auto;
+}
+
+.overlayPanel {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  width: min(42%, 28rem);
+  max-width: 100%;
+  height: 100%;
+  padding: 1.5rem 1.25rem 1.5rem 1.5rem;
+  overflow-y: auto;
+  pointer-events: auto;
+  background: rgba(18, 14, 10, 0.94);
+  color: #f5f0e6;
+  box-shadow: -8px 0 24px rgba(0, 0, 0, 0.45);
+  animation: overlaySlideIn 220ms ease-out;
+}
+
+@keyframes overlaySlideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0.6;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlayPanel {
+    animation: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .overlayRoot {
+    justify-content: stretch;
+  }
+
+  .overlayPanel {
+    width: 100%;
+    max-width: 100%;
+    box-shadow: none;
+    padding: 1.25rem 1rem 1.5rem;
+  }
+}
+
+.overlayClose {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.65rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #f5f0e6;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  appearance: none;
+}
+
+.overlayClose:focus-visible {
+  outline: 2px solid rgba(245, 240, 230, 0.85);
+  outline-offset: 2px;
+}
+
+.overlayTitle {
+  margin: 0 2.5rem 1rem 0;
+  font-family: var(--font-special-elite), "Special Elite", cursive;
+  font-size: clamp(1.1rem, 2.8cqi, 1.6rem);
+  font-weight: 400;
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+}
+
+.overlayBody {
+  margin: 0;
+  font-size: clamp(0.85rem, 1.8cqi, 1rem);
+  line-height: 1.55;
+  color: rgba(245, 240, 230, 0.9);
+}
+
+.overlayBody p {
+  margin: 0 0 0.85em;
+}
+
+.overlayBody p:last-child {
+  margin-bottom: 0;
+}

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <!--
+    DialWindLayer CSS mask-image convention:
+    white = dial/wind video visible
+    black = punched glass hole (VF layer shows through)
+    Hole matches VF_BOUNDS: px (470,192) 345×301 on the 1280×720 hero.
+  -->
+  <rect width="1280" height="720" fill="white"/>
+  <rect x="470" y="192" width="345" height="301" fill="black"/>
+</svg>
