@@ -2,16 +2,18 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { SECTIONS } from "@/data/sections";
+import { BASE_STILL_SRC } from "@/lib/hasselbladAssets";
 import { nextSectionIndex } from "@/lib/sections";
 import { DialWindLayer } from "./DialWindLayer";
 import { HitTargets } from "./HitTargets";
 import { SectionOverlay } from "./SectionOverlay";
 import { ViewfinderLayer } from "./ViewfinderLayer";
 import { usePrefersReducedMotion } from "./usePrefersReducedMotion";
+import { useSyncedVfGlass } from "./useSyncedVfGlass";
 import styles from "./hasselblad.module.css";
 
 const AUTO_WIND_MS = 3000;
-const BASE_SRC = "/hasselblad/base.jpg";
+const BASE_SRC = BASE_STILL_SRC;
 
 function waitForEvent(target: EventTarget, type: string): Promise<void> {
   return new Promise((resolve) => {
@@ -27,6 +29,9 @@ export function HasselbladHero() {
   const [index, setIndex] = useState(0);
   const [overlayOpen, setOverlayOpen] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const vfRef = useRef<HTMLDivElement>(null);
+  const glassRef = useRef<HTMLButtonElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
   const advancingRef = useRef(false);
   const overlayOpenRef = useRef(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -107,12 +112,19 @@ export function HasselbladHero() {
     setOverlayOpen(true);
   }, []);
 
+  useSyncedVfGlass(
+    { videoRef, vfRef, glassRef, stageRef },
+    reducedMotion,
+  );
+
   const section = SECTIONS[index] ?? SECTIONS[0];
 
   return (
     <div
+      ref={stageRef}
       className={styles.stage}
       data-reduced-motion={reducedMotion ? "true" : "false"}
+      data-vf-frame="0"
     >
       {/* eslint-disable-next-line @next/next/no-img-element -- static base still; layered composite */}
       <img
@@ -121,9 +133,13 @@ export function HasselbladHero() {
         alt=""
         draggable={false}
       />
-      <ViewfinderLayer section={section} />
+      <ViewfinderLayer section={section} boxRef={vfRef} />
       <DialWindLayer videoRef={videoRef} reducedMotion={reducedMotion} />
-      <HitTargets onCrankClick={onCrankClick} onGlassClick={onGlassClick} />
+      <HitTargets
+        onCrankClick={onCrankClick}
+        onGlassClick={onGlassClick}
+        glassRef={glassRef}
+      />
       {overlayOpen ? (
         <SectionOverlay
           section={section}

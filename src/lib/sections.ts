@@ -2,6 +2,7 @@ export type Section = {
   id: string;
   label: string;
   viewfinderImage: string;
+  viewfinderSrcSet: string;
   overlayBody: string;
 };
 

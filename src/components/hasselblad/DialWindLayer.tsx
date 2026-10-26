@@ -1,9 +1,10 @@
 "use client";
 
 import type { Ref } from "react";
+import { DIAL_WIND_SRC } from "@/lib/hasselbladAssets";
 import styles from "./hasselblad.module.css";
 
-const DEFAULT_SRC = "/hasselblad/dial-wind-v18.mp4";
+const DEFAULT_SRC = DIAL_WIND_SRC;
 
 export type DialWindLayerProps = {
   videoRef: Ref<HTMLVideoElement>;
@@ -13,8 +14,9 @@ export type DialWindLayerProps = {
 };
 
 /**
- * Masked v18 wind video. Glass hole is punched via vf-mask.svg
- * (white = video visible, black = transparent). Parent owns play/seek.
+ * Masked v23 wind video. Glass hole is punched via vf-mask.svg
+ * (white = video visible, black = transparent). Parent owns play/seek
+ * and slides the hole with the VF track while the clip plays.
  *
  * When prefers-reduced-motion, renders nothing — parent still advances
  * sections on the ~3s interval / crank click (glass crossfade only).

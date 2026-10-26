@@ -123,14 +123,15 @@
 }
 
 /*
-  Fat crank hit over the RHS winding dial (approx on 1280×720 base).
-  Dial knurl ~ (900,320)–(1040,450); box padded for tap/click.
+  Fat crank hit over the v23 RHS winding arm.
+  Measured on base-v23.jpg: bright handle x=910–932, y=371–513.
+  Box is centered on that arm, (852,343)–(992,543), padded for tap/click.
 */
 .crankHit {
-  left: 68%;
-  top: 40%;
-  width: 16%;
-  height: 26%;
+  left: 66.5625%;
+  top: 47.6389%;
+  width: 10.9375%;
+  height: 27.7778%;
   z-index: 5;
 }
 
@@ -163,10 +164,10 @@
 
 @media (max-width: 640px) {
   .crankHit {
-    left: 64%;
-    top: 36%;
-    width: 24%;
-    height: 34%;
+    left: 58%;
+    top: 40%;
+    width: 30%;
+    height: 40%;
   }
 }
 

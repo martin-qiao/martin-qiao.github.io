@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type Ref } from "react";
 import type { Section } from "@/lib/sections";
 import { VF_BOUNDS } from "@/lib/vfGeometry";
 import styles from "./hasselblad.module.css";
@@ -8,6 +8,8 @@ import styles from "./hasselblad.module.css";
 export type ViewfinderLayerProps = {
   section: Section;
   className?: string;
+  /** Parent moves this box with the wind track. */
+  boxRef?: Ref<HTMLDivElement>;
 };
 
 const CROSSFADE_MS = 280;
@@ -17,7 +19,11 @@ const CROSSFADE_MS = 280;
  * Cheap opacity crossfade when the section changes (reduced-motion path
  * skips wind video and relies on this swap).
  */
-export function ViewfinderLayer({ section, className }: ViewfinderLayerProps) {
+export function ViewfinderLayer({
+  section,
+  className,
+  boxRef,
+}: ViewfinderLayerProps) {
   const [current, setCurrent] = useState(section);
   const [previous, setPrevious] = useState<Section | null>(null);
   const currentRef = useRef(section);
@@ -33,6 +39,7 @@ export function ViewfinderLayer({ section, className }: ViewfinderLayerProps) {
 
   return (
     <div
+      ref={boxRef}
       className={[styles.vf, className].filter(Boolean).join(" ")}
       style={{
         left: `${VF_BOUNDS.leftPct}%`,
@@ -49,6 +56,7 @@ export function ViewfinderLayer({ section, className }: ViewfinderLayerProps) {
           <img
             className={styles.vfImage}
             src={previous.viewfinderImage}
+            srcSet={previous.viewfinderSrcSet}
             alt=""
             draggable={false}
           />
@@ -65,6 +73,7 @@ export function ViewfinderLayer({ section, className }: ViewfinderLayerProps) {
         <img
           className={styles.vfImage}
           src={current.viewfinderImage}
+          srcSet={current.viewfinderSrcSet}
           alt=""
           draggable={false}
         />
