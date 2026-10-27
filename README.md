@@ -8,12 +8,11 @@ Next.js personal site with a Hasselblad 503CW–inspired homepage composite (App
 
 | Path | Role |
 |------|------|
-| `base-v23.jpg` | Locked landing base still (black curtains). `base.jpg` is the same file so the previous URL still resolves |
-| `dial-wind-v23-black-curtains.mp4` | Locked idle wind clip (one RHS-clockwise cycle, green viewfinder) |
-| `dial-wind-v18.mp4` | Previous wind clip, kept so the old URL still resolves |
-| `vf-mask.svg` | Rest-pose viewfinder glass mask (v23 rect 524,300 234×233) |
-| `vf-track.json` | 73-frame / 24fps glass track. The thumb and mask hole follow it during wind |
-| `vf-bounds-v23.json` | Locked glass rect for the v23 still |
+| `base-v24-rest.jpg` | Locked landing base still (black canvas). `base.jpg` is the same file so the previous URL still resolves |
+| `dial-wind-v24h-even-pace.mp4` | Locked idle wind clip (one RHS-clockwise cycle, ~1.25s, even pace, green viewfinder, locked body) |
+| `vf-mask.svg` | Rest-pose viewfinder glass mask (v24h rect 524,301 234×233) |
+| `vf-track.json` | 30-frame / 24fps glass track. Body is locked, so every frame is the same rect |
+| `vf-bounds-v24h.json` | Locked glass rect for the v24h still |
 | `sections/*.jpg` | Per-section viewfinder photos (`developer`, `learner`, `photographer`, `traveler`, `life-recorder`, `reader`, `movie-lover`, plus `@2x`) |
 
 ### Swap section images / edit copy

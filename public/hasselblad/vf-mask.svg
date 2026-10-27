@@ -3,9 +3,9 @@
     DialWindLayer CSS mask-image convention:
     white = dial/wind video visible
     black = punched glass hole (VF layer shows through)
-    Hole matches locked v23 VF_BOUNDS: px (524,300) 234×233 on the 1280×720 hero.
+    Hole matches locked v24h VF_BOUNDS: px (524,301) 234×233 on the 1280×720 hero.
     While the wind plays, the hole follows vf-track.json (see useSyncedVfGlass).
   -->
   <rect width="1280" height="720" fill="white"/>
-  <rect x="524" y="300" width="234" height="233" fill="black"/>
+  <rect x="524" y="301" width="234" height="233" fill="black"/>
 </svg>

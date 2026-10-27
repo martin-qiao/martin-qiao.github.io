@@ -1,9 +1,9 @@
 /**
  * Viewfinder glass geometry for the 1280×720 Hasselblad hero.
  *
- * Locked v23 glass (public/hasselblad/vf-bounds-v23.json), measured on
- * base-v23.jpg / dial-wind-v23-black-curtains.mp4:
- * px (524, 300) 234×233.
+ * Locked v24h glass (public/hasselblad/vf-bounds-v24h.json), measured on
+ * base-v24-rest.jpg / dial-wind-v24h-even-pace.mp4:
+ * px (524, 301) 234×233. The body is locked, so this rect holds for the clip.
  *
  * Mask convention (public/hasselblad/vf-mask.svg + DialWindLayer):
  * CSS mask-image — white = dial video visible, black = punched glass
@@ -13,7 +13,7 @@
 export const HERO_WIDTH = 1280;
 export const HERO_HEIGHT = 720;
 
-export const VF_GLASS_PX = { x: 524, y: 300, w: 234, h: 233 } as const;
+export const VF_GLASS_PX = { x: 524, y: 301, w: 234, h: 233 } as const;
 
 export const VF_BOUNDS = {
   leftPct: (VF_GLASS_PX.x / HERO_WIDTH) * 100,
