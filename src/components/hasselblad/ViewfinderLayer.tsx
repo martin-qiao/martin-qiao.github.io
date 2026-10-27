@@ -1,41 +1,38 @@
 "use client";
 
-import { useEffect, useRef, useState, type Ref } from "react";
+import type { Ref } from "react";
 import type { Section } from "@/lib/sections";
+import { vfCrossfadeOpacity } from "@/lib/vfCrossfade";
 import { VF_BOUNDS } from "@/lib/vfGeometry";
 import styles from "./hasselblad.module.css";
 
 export type ViewfinderLayerProps = {
   section: Section;
+  /** Next photo. Present for the whole wind / reduced-motion crossfade. */
+  incoming?: Section | null;
+  /** 0 at the start of the swap, 1 at the end. */
+  progress?: number;
   className?: string;
   /** Parent moves this box with the wind track. */
   boxRef?: Ref<HTMLDivElement>;
 };
 
-const CROSSFADE_MS = 280;
-
 /**
  * Section photo + Special Elite title clipped to the VF glass rect.
- * Cheap opacity crossfade when the section changes (reduced-motion path
- * skips wind video and relies on this swap).
+ * The box is opaque black. During a swap the outgoing photo fades out
+ * over the first half and the incoming photo fades in over the second
+ * half, so a transparent frame reveals black instead of the chroma plate.
  */
 export function ViewfinderLayer({
   section,
+  incoming = null,
+  progress = 0,
   className,
   boxRef,
 }: ViewfinderLayerProps) {
-  const [current, setCurrent] = useState(section);
-  const [previous, setPrevious] = useState<Section | null>(null);
-  const currentRef = useRef(section);
-
-  useEffect(() => {
-    if (section.id === currentRef.current.id) return;
-    setPrevious(currentRef.current);
-    currentRef.current = section;
-    setCurrent(section);
-    const timer = window.setTimeout(() => setPrevious(null), CROSSFADE_MS);
-    return () => window.clearTimeout(timer);
-  }, [section]);
+  const swapping = incoming !== null && incoming.id !== section.id;
+  const fade = vfCrossfadeOpacity(progress);
+  const visible = swapping ? incoming : section;
 
   return (
     <div
@@ -48,37 +45,42 @@ export function ViewfinderLayer({
         height: `${VF_BOUNDS.heightPct}%`,
         containerType: "size",
       }}
-      data-section-id={current.id}
+      data-section-id={swapping ? section.id : visible.id}
     >
-      {previous ? (
-        <div className={styles.vfStack} aria-hidden>
-          {/* eslint-disable-next-line @next/next/no-img-element -- presentational layer */}
-          <img
-            className={styles.vfImage}
-            src={previous.viewfinderImage}
-            srcSet={previous.viewfinderSrcSet}
-            alt=""
-            draggable={false}
-          />
-          <p className={styles.title}>{previous.label}</p>
+      {swapping ? (
+        <div
+          key={section.id}
+          className={styles.vfStack}
+          style={{ opacity: fade.outgoing }}
+          aria-hidden
+        >
+          <SectionStill section={section} />
         </div>
       ) : null}
       <div
-        key={current.id}
-        className={[styles.vfStack, previous ? styles.vfIncoming : ""]
-          .filter(Boolean)
-          .join(" ")}
+        key={visible.id}
+        className={styles.vfStack}
+        style={{ opacity: swapping ? fade.incoming : 1 }}
+        aria-hidden={swapping ? true : undefined}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element -- presentational layer; parent owns loading */}
-        <img
-          className={styles.vfImage}
-          src={current.viewfinderImage}
-          srcSet={current.viewfinderSrcSet}
-          alt=""
-          draggable={false}
-        />
-        <p className={styles.title}>{current.label}</p>
+        <SectionStill section={visible} />
       </div>
     </div>
+  );
+}
+
+function SectionStill({ section }: { section: Section }) {
+  return (
+    <>
+      {/* eslint-disable-next-line @next/next/no-img-element -- presentational layer */}
+      <img
+        className={styles.vfImage}
+        src={section.viewfinderImage}
+        srcSet={section.viewfinderSrcSet}
+        alt=""
+        draggable={false}
+      />
+      <p className={styles.title}>{section.label}</p>
+    </>
   );
 }
