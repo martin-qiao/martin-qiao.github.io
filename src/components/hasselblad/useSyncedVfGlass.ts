@@ -27,13 +27,10 @@ function applyPresentation(nodes: SyncNodes, index: number) {
   }
   const video = nodes.videoRef.current;
   if (video) {
-    if (presentation.maskImage) {
-      video.style.maskImage = presentation.maskImage;
-      video.style.setProperty("-webkit-mask-image", presentation.maskImage);
-    } else {
-      video.style.removeProperty("mask-image");
-      video.style.removeProperty("-webkit-mask-image");
-    }
+    // Leave the chroma plate intact. A punched hole would reveal whatever sits
+    // under the glass; this preview must not composite section thumbs there.
+    video.style.maskImage = "none";
+    video.style.setProperty("-webkit-mask-image", "none");
   }
   const frameAttr = String(presentation.frameIndex);
   nodes.stageRef.current?.setAttribute("data-vf-frame", frameAttr);
@@ -41,11 +38,10 @@ function applyPresentation(nodes: SyncNodes, index: number) {
 }
 
 /**
- * Moves the viewfinder thumb, glass hit target, and mask hole with
- * vf-track.json. Samples video.currentTime while the wind plays and
- * returns to frame 0 at rest (paused at 0, or after ended).
- * The hole is outset a few pixels from the track so the soft green edge
- * stays keyed out. Reduced motion leaves that rest pose fixed — no shake.
+ * Moves the glass hit target with vf-track.json. Samples video.currentTime
+ * while the wind plays and returns to frame 0 at rest (paused at 0, or after
+ * ended). The chroma plate is left unmasked so the glass shows the clip,
+ * not a section thumbnail. Reduced motion leaves the rest pose fixed.
  */
 export function useSyncedVfGlass(
   { videoRef, vfRef, glassRef, stageRef }: SyncNodes,

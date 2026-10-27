@@ -7,7 +7,6 @@ import { nextSectionIndex } from "@/lib/sections";
 import { DialWindLayer } from "./DialWindLayer";
 import { HitTargets } from "./HitTargets";
 import { SectionOverlay } from "./SectionOverlay";
-import { ViewfinderLayer } from "./ViewfinderLayer";
 import { usePrefersReducedMotion } from "./usePrefersReducedMotion";
 import { useSyncedVfGlass } from "./useSyncedVfGlass";
 import styles from "./hasselblad.module.css";
@@ -133,7 +132,7 @@ export function HasselbladHero() {
         alt=""
         draggable={false}
       />
-      <ViewfinderLayer section={section} boxRef={vfRef} />
+      {/* Framing check: no section thumbs in the glass. The clip's chroma plate stays visible. */}
       <DialWindLayer videoRef={videoRef} reducedMotion={reducedMotion} />
       <HitTargets
         onCrankClick={onCrankClick}
