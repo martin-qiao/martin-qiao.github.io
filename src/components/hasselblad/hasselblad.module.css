@@ -5,8 +5,8 @@
   position: relative;
   aspect-ratio: 1280 / 720;
   width: min(100%, 1200px);
-  /* Framing check: sit the whole composite a few cm lower in the viewport. */
-  margin: 3cm auto 0;
+  /* Framing check: 2cm below the original top (was 3cm; raised 1cm). */
+  margin: 2cm auto 0;
   overflow: hidden;
 }
 
