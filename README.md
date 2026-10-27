@@ -8,11 +8,11 @@ Next.js personal site with a Hasselblad 503CW–inspired homepage composite (App
 
 | Path | Role |
 |------|------|
-| `base-v24i-lens-fixed.jpg` | Locked landing base still (black canvas, realistic lens scales). `base.jpg` is the same file so the previous URL still resolves |
-| `dial-wind-v24i-lens-fixed.mp4` | Locked idle wind clip (one RHS-clockwise cycle, ~1.25s, even pace, green viewfinder, locked body, lens scales fixed) |
-| `vf-mask.svg` | Rest-pose viewfinder glass mask (v24i rect 524,301 234×233). The framing preview does not punch this hole |
+| `base-v26b-correct-scales.jpg` | Locked landing base still (black canvas, engraved Planar scales). `base.jpg` is the same file so the previous URL still resolves |
+| `dial-wind-v26j-even-pace.mp4` | Locked idle wind clip (one RHS-clockwise cycle, 1.25s, even pace, green viewfinder, locked body) |
+| `vf-mask.svg` | Rest-pose viewfinder glass mask (v26 rect 524,301 234×233) |
 | `vf-track.json` | 30-frame / 24fps glass track. Body is locked, so every frame is the same rect |
-| `vf-bounds-v24i.json` | Locked glass rect for the v24i still |
+| `vf-bounds-v26.json` | Locked glass rect for the v26 still |
 | `sections/*.jpg` | Per-section viewfinder photos (`developer`, `learner`, `photographer`, `traveler`, `life-recorder`, `reader`, `movie-lover`, plus `@2x`) |
 
 ### Swap section images / edit copy

@@ -1,8 +1,8 @@
 /**
  * Viewfinder glass geometry for the 1280×720 Hasselblad hero.
  *
- * Locked v24i glass (public/hasselblad/vf-bounds-v24i.json), measured on
- * base-v24i-lens-fixed.jpg / dial-wind-v24i-lens-fixed.mp4:
+ * Locked v26 glass (public/hasselblad/vf-bounds-v26.json), measured on
+ * base-v26b-correct-scales.jpg / dial-wind-v26j-even-pace.mp4:
  * px (524, 301) 234×233. The body is locked, so this rect holds for the clip.
  *
  * Mask convention (public/hasselblad/vf-mask.svg + DialWindLayer):

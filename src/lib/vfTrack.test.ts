@@ -9,19 +9,19 @@ import {
   VF_FRAME_COUNT,
 } from "@/lib/vfTrack";
 
-test("ships the locked v24i wind clip and base still", () => {
-  expect(DIAL_WIND_SRC).toBe("/hasselblad/dial-wind-v24i-lens-fixed.mp4");
-  expect(BASE_STILL_SRC).toBe("/hasselblad/base-v24i-lens-fixed.jpg");
+test("ships the locked v26j wind clip and base still", () => {
+  expect(DIAL_WIND_SRC).toBe("/hasselblad/dial-wind-v26j-even-pace.mp4");
+  expect(BASE_STILL_SRC).toBe("/hasselblad/base-v26b-correct-scales.jpg");
   expect(existsSync(`public${DIAL_WIND_SRC}`)).toBe(true);
   expect(existsSync(`public${BASE_STILL_SRC}`)).toBe(true);
   expect(existsSync("public/hasselblad/base.jpg")).toBe(true);
-  expect(existsSync("public/hasselblad/dial-wind-v24h-even-pace.mp4")).toBe(false);
-  expect(existsSync("public/hasselblad/base-v24-rest.jpg")).toBe(false);
+  expect(existsSync("public/hasselblad/dial-wind-v24i-lens-fixed.mp4")).toBe(false);
+  expect(existsSync("public/hasselblad/base-v24i-lens-fixed.jpg")).toBe(false);
   expect(existsSync("public/hasselblad/dial-wind-v23-black-curtains.mp4")).toBe(false);
   expect(existsSync("public/hasselblad/dial-wind-v18.mp4")).toBe(false);
 });
 
-test("VF_BOUNDS is the locked v24i glass rect", () => {
+test("VF_BOUNDS is the locked v26 glass rect", () => {
   expect(VF_GLASS_PX).toEqual({ x: 524, y: 301, w: 234, h: 233 });
   expect(VF_BOUNDS.leftPct).toBeCloseTo((524 / 1280) * 100, 5);
   expect(VF_BOUNDS.topPct).toBeCloseTo((301 / 720) * 100, 5);
