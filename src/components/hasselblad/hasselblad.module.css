@@ -15,8 +15,16 @@
   top: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: max(100vw, calc(100vh * 1280 / 720));
-  width: max(100vw, calc(100dvh * 1280 / 720));
+  /* Cover size, then 10% smaller so the body sits a bit inside the black canvas. */
+  --hero-scale: 0.9;
+  width: max(
+    calc(var(--hero-scale) * 100vw),
+    calc(var(--hero-scale) * 100vh * 1280 / 720)
+  );
+  width: max(
+    calc(var(--hero-scale) * 100vw),
+    calc(var(--hero-scale) * 100dvh * 1280 / 720)
+  );
   aspect-ratio: 1280 / 720;
   overflow: hidden;
 }
