@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { SECTIONS } from "@/data/sections";
 import { BASE_STILL_SRC } from "@/lib/hasselbladAssets";
 import { nextSectionIndex } from "@/lib/sections";
+import { VF_FPS, VF_FRAME_COUNT } from "@/lib/vfTrack";
 import { DialWindLayer } from "./DialWindLayer";
 import { HitTargets } from "./HitTargets";
 import { SectionOverlay } from "./SectionOverlay";
@@ -13,20 +14,90 @@ import { useSyncedVfGlass } from "./useSyncedVfGlass";
 import styles from "./hasselblad.module.css";
 
 const AUTO_WIND_MS = 3000;
+const CROSSFADE_MS = 280;
+const WIND_DURATION_S = VF_FRAME_COUNT / VF_FPS;
 const BASE_SRC = BASE_STILL_SRC;
 
-function waitForEvent(target: EventTarget, type: string): Promise<void> {
+type VfSwap = {
+  fromIndex: number;
+  toIndex: number;
+  progress: number;
+};
+
+type RafSlot = { current: number | null };
+
+function cancelRaf(slot: RafSlot) {
+  if (slot.current !== null) {
+    cancelAnimationFrame(slot.current);
+    slot.current = null;
+  }
+}
+
+/** Timed crossfade used when the wind clip is skipped. */
+function animateProgress(
+  slot: RafSlot,
+  durationMs: number,
+  onProgress: (progress: number) => void,
+): Promise<void> {
   return new Promise((resolve) => {
-    const onEvent = () => {
-      target.removeEventListener(type, onEvent);
+    const start = performance.now();
+    const tick = (now: number) => {
+      const progress = Math.min(1, (now - start) / durationMs);
+      onProgress(progress);
+      if (progress >= 1) {
+        slot.current = null;
+        resolve();
+        return;
+      }
+      slot.current = requestAnimationFrame(tick);
+    };
+    slot.current = requestAnimationFrame(tick);
+  });
+}
+
+/**
+ * Sample the playing wind clip. Progress is currentTime / duration so the
+ * outgoing thumb is gone at the half-cycle midpoint and the incoming thumb
+ * is fully opaque only when the clip ends.
+ */
+function followWind(
+  video: HTMLVideoElement,
+  slot: RafSlot,
+  onProgress: (progress: number) => void,
+): Promise<void> {
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      video.removeEventListener("ended", onEnded);
+      cancelRaf(slot);
+      onProgress(1);
       resolve();
     };
-    target.addEventListener(type, onEvent);
+    const onEnded = () => finish();
+    const sample = () => {
+      if (settled) return;
+      const duration =
+        Number.isFinite(video.duration) && video.duration > 0
+          ? video.duration
+          : WIND_DURATION_S;
+      const progress = Math.min(1, Math.max(0, video.currentTime / duration));
+      onProgress(progress);
+      if (video.ended || progress >= 1) {
+        finish();
+        return;
+      }
+      slot.current = requestAnimationFrame(sample);
+    };
+    video.addEventListener("ended", onEnded);
+    slot.current = requestAnimationFrame(sample);
   });
 }
 
 export function HasselbladHero() {
   const [index, setIndex] = useState(0);
+  const [swap, setSwap] = useState<VfSwap | null>(null);
   const [overlayOpen, setOverlayOpen] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const vfRef = useRef<HTMLDivElement>(null);
@@ -35,6 +106,9 @@ export function HasselbladHero() {
   const advancingRef = useRef(false);
   const overlayOpenRef = useRef(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const indexRef = useRef(0);
+  const swapRafRef = useRef<number | null>(null);
+  const mountedRef = useRef(true);
   const reducedMotion = usePrefersReducedMotion();
   const reducedMotionRef = useRef(reducedMotion);
 
@@ -46,6 +120,18 @@ export function HasselbladHero() {
     reducedMotionRef.current = reducedMotion;
   }, [reducedMotion]);
 
+  useEffect(() => {
+    indexRef.current = index;
+  }, [index]);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      cancelRaf(swapRafRef);
+    };
+  }, []);
+
   const clearTimer = useCallback(() => {
     if (timerRef.current !== null) {
       clearTimeout(timerRef.current);
@@ -53,27 +139,49 @@ export function HasselbladHero() {
     }
   }, []);
 
+  const setSwapProgress = useCallback((progress: number) => {
+    if (!mountedRef.current) return;
+    setSwap((current) => (current ? { ...current, progress } : current));
+  }, []);
+
   const advance = useCallback(async () => {
     if (advancingRef.current) return;
     advancingRef.current = true;
+    cancelRaf(swapRafRef);
     try {
-      // Reduced-motion: DialWindLayer is null — skip video, still advance index.
+      const fromIndex = indexRef.current;
+      const toIndex = nextSectionIndex(fromIndex, SECTIONS.length);
+      if (mountedRef.current) {
+        setSwap({ fromIndex, toIndex, progress: 0 });
+      }
+
+      // Reduced-motion unmounts the wind clip. A failed play() takes the
+      // same timed curve so the glass still never opens onto the plate.
+      let wound = false;
       if (!reducedMotionRef.current && videoRef.current) {
         const video = videoRef.current;
         video.currentTime = 0;
-        const played = await video
+        wound = await video
           .play()
           .then(() => true)
           .catch(() => false);
-        if (played) {
-          await waitForEvent(video, "ended");
+        if (wound) {
+          await followWind(video, swapRafRef, setSwapProgress);
         }
       }
-      setIndex((i) => nextSectionIndex(i, SECTIONS.length));
+      if (!wound) {
+        await animateProgress(swapRafRef, CROSSFADE_MS, setSwapProgress);
+      }
+
+      indexRef.current = toIndex;
+      if (mountedRef.current) {
+        setIndex(toIndex);
+        setSwap(null);
+      }
     } finally {
       advancingRef.current = false;
     }
-  }, []);
+  }, [setSwapProgress]);
 
   const scheduleNextRef = useRef<() => void>(() => {});
 
@@ -117,7 +225,9 @@ export function HasselbladHero() {
     reducedMotion,
   );
 
-  const section = SECTIONS[index] ?? SECTIONS[0];
+  const settled = SECTIONS[index] ?? SECTIONS[0];
+  const outgoing = swap ? (SECTIONS[swap.fromIndex] ?? settled) : settled;
+  const incoming = swap ? (SECTIONS[swap.toIndex] ?? null) : null;
 
   return (
     <div className={styles.frame}>
@@ -134,7 +244,12 @@ export function HasselbladHero() {
           alt=""
           draggable={false}
         />
-        <ViewfinderLayer section={section} boxRef={vfRef} />
+        <ViewfinderLayer
+          section={outgoing}
+          incoming={incoming}
+          progress={swap?.progress ?? 0}
+          boxRef={vfRef}
+        />
         <DialWindLayer videoRef={videoRef} reducedMotion={reducedMotion} />
         <HitTargets
           onCrankClick={onCrankClick}
@@ -143,7 +258,7 @@ export function HasselbladHero() {
         />
         {overlayOpen ? (
           <SectionOverlay
-            section={section}
+            section={settled}
             onClose={() => setOverlayOpen(false)}
           />
         ) : null}
