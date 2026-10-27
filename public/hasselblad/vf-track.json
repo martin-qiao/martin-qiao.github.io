@@ -2,7 +2,7 @@
   "fps": 24,
   "n_wind_frames": 30,
   "n_cycles": 1,
-  "method": "strong chroma plate on dial-wind-v24h-even-pace.mp4; body locked, plate stable at 524,301 234x233 for all 30 frames",
+  "method": "strong chroma plate on dial-wind-v24i-lens-fixed.mp4; body locked, plate stable at 524,301 234x233 for all 30 frames",
   "f0": {
     "cx": 641.0,
     "cy": 417.5,
