@@ -11,8 +11,8 @@
 
 .stage {
   position: absolute;
-  /* Settled framing: 2cm below the original top-aligned position. */
-  top: 2cm;
+  /* Raised 2cm from the previous offset, back to the original top edge. */
+  top: 0;
   left: 50%;
   transform: translateX(-50%);
   width: max(100vw, calc(100vh * 1280 / 720));
