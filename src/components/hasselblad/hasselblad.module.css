@@ -1,11 +1,23 @@
 /* Hasselblad hero presentational shell.
    Parent composes layers inside .stage. */
 
+/* Full-viewport clip. The 1280×720 stage covers the viewport; black shows behind. */
+.frame {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: #000;
+}
+
 .stage {
-  position: relative;
+  position: absolute;
+  /* Settled framing: 2cm below the original top-aligned position. */
+  top: 2cm;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max(100vw, calc(100vh * 1280 / 720));
+  width: max(100vw, calc(100dvh * 1280 / 720));
   aspect-ratio: 1280 / 720;
-  width: min(100%, 1200px);
-  margin: 0 auto;
   overflow: hidden;
 }
 
@@ -123,8 +135,8 @@
 }
 
 /*
-  Fat crank hit over the v23 RHS winding arm.
-  Measured on base-v23.jpg: bright handle x=910–932, y=371–513.
+  Fat crank hit over the RHS winding arm.
+  Bright handle sits near x=910–932, y=371–513 on the landing still.
   Box is centered on that arm, (852,343)–(992,543), padded for tap/click.
 */
 .crankHit {

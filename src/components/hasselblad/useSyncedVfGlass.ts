@@ -45,7 +45,8 @@ function applyPresentation(nodes: SyncNodes, index: number) {
  * vf-track.json. Samples video.currentTime while the wind plays and
  * returns to frame 0 at rest (paused at 0, or after ended).
  * The hole is outset a few pixels from the track so the soft green edge
- * stays keyed out. Reduced motion leaves that rest pose fixed — no shake.
+ * stays keyed out and the section thumb shows through. Reduced motion
+ * leaves that rest pose fixed — no shake.
  */
 export function useSyncedVfGlass(
   { videoRef, vfRef, glassRef, stageRef }: SyncNodes,

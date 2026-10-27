@@ -14,7 +14,7 @@ export type DialWindLayerProps = {
 };
 
 /**
- * Masked v23 wind video. Glass hole is punched via vf-mask.svg
+ * Masked v26j wind video. Glass hole is punched via vf-mask.svg
  * (white = video visible, black = transparent). Parent owns play/seek
  * and slides the hole with the VF track while the clip plays.
  *
