@@ -1,17 +1,12 @@
 /* Hasselblad hero presentational shell.
    Parent composes layers inside .stage. */
 
-/* Full-viewport clip. The 1280×720 stage sits on the film-box photo.
-   Black is only the fallback while the photo is missing. */
+/* Full-viewport clip. The 1280×720 stage covers the viewport; black shows behind. */
 .frame {
   position: fixed;
   inset: 0;
   overflow: hidden;
-  background-color: #000;
-  background-image: url("/hasselblad/film-boxes-bg.png");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background: #000;
 }
 
 .stage {
