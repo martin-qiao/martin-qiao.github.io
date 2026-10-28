@@ -6,6 +6,7 @@ import { BASE_STILL_SRC } from "@/lib/hasselbladAssets";
 import { nextSectionIndex } from "@/lib/sections";
 import { VF_FPS, VF_FRAME_COUNT } from "@/lib/vfTrack";
 import { DialWindLayer } from "./DialWindLayer";
+import { FilmReel } from "./FilmReel";
 import { HitTargets } from "./HitTargets";
 import { SectionOverlay } from "./SectionOverlay";
 import { ViewfinderLayer } from "./ViewfinderLayer";
@@ -251,6 +252,7 @@ export function HasselbladHero() {
           boxRef={vfRef}
         />
         <DialWindLayer videoRef={videoRef} reducedMotion={reducedMotion} />
+        <FilmReel section={settled} />
         <HitTargets
           onCrankClick={onCrankClick}
           onGlassClick={onGlassClick}
