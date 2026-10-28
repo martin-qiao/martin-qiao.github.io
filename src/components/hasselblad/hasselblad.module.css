@@ -11,8 +11,8 @@
 
 .stage {
   position: absolute;
-  /* Raised 2cm from the previous offset, back to the original top edge. */
-  top: 0;
+  /* 1cm below the viewport top. */
+  top: 1cm;
   left: 50%;
   transform: translateX(-50%);
   /* Cover size, then 10% smaller so the body sits a bit inside the black canvas. */
