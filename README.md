@@ -9,6 +9,7 @@ Next.js personal site with a Hasselblad 503CW–inspired homepage composite (App
 | Path | Role |
 |------|------|
 | `base-v26b-correct-scales.jpg` | Locked landing base still (black canvas, engraved Planar scales). `base.jpg` is the same file so the previous URL still resolves |
+| `film-boxes-bg.png` | Page background behind the camera stage (`background-size: cover`, centered). Black remains the CSS fallback |
 | `dial-wind-v26j-even-pace.mp4` | Locked idle wind clip (one RHS-clockwise cycle, 1.25s, even pace, green viewfinder, locked body) |
 | `vf-mask.svg` | Rest-pose viewfinder glass mask (v26 rect 524,301 234×233) |
 | `vf-track.json` | 30-frame / 24fps glass track. Body is locked, so every frame is the same rect |
