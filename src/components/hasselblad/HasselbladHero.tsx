@@ -3,6 +3,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { SECTIONS } from "@/data/sections";
 import { BASE_STILL_SRC } from "@/lib/hasselbladAssets";
+import {
+  REEL_IDLE_MS,
+  reelHoldsAutoWind,
+  stripIndexAfterWind,
+  type ReelHold,
+  type WindSource,
+} from "@/lib/reelWind";
 import { nextSectionIndex } from "@/lib/sections";
 import { VF_FPS, VF_FRAME_COUNT } from "@/lib/vfTrack";
 import { DialWindLayer } from "./DialWindLayer";
@@ -14,7 +21,7 @@ import { usePrefersReducedMotion } from "./usePrefersReducedMotion";
 import { useSyncedVfGlass } from "./useSyncedVfGlass";
 import styles from "./hasselblad.module.css";
 
-const AUTO_WIND_MS = 3000;
+export const AUTO_WIND_MS = 3000;
 const CROSSFADE_MS = 280;
 const WIND_DURATION_S = VF_FRAME_COUNT / VF_FPS;
 const BASE_SRC = BASE_STILL_SRC;
@@ -98,6 +105,7 @@ function followWind(
 
 export function HasselbladHero() {
   const [index, setIndex] = useState(0);
+  const [intentionalIndex, setIntentionalIndex] = useState(0);
   const [swap, setSwap] = useState<VfSwap | null>(null);
   const [overlayOpen, setOverlayOpen] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -107,11 +115,19 @@ export function HasselbladHero() {
   const advancingRef = useRef(false);
   const overlayOpenRef = useRef(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const indexRef = useRef(0);
+  const intentionalRef = useRef(0);
+  const holdRef = useRef<ReelHold>({ focused: false, lastInputAt: null });
   const swapRafRef = useRef<number | null>(null);
   const mountedRef = useRef(true);
   const reducedMotion = usePrefersReducedMotion();
   const reducedMotionRef = useRef(reducedMotion);
+  const advanceRef = useRef<(source: WindSource) => Promise<boolean>>(
+    async () => false,
+  );
+  const armAutoWindRef = useRef<() => void>(() => {});
+  const holdAutoWindRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     overlayOpenRef.current = overlayOpen;
@@ -125,14 +141,6 @@ export function HasselbladHero() {
     indexRef.current = index;
   }, [index]);
 
-  useEffect(() => {
-    mountedRef.current = true;
-    return () => {
-      mountedRef.current = false;
-      cancelRaf(swapRafRef);
-    };
-  }, []);
-
   const clearTimer = useCallback(() => {
     if (timerRef.current !== null) {
       clearTimeout(timerRef.current);
@@ -140,13 +148,30 @@ export function HasselbladHero() {
     }
   }, []);
 
+  const clearIdleTimer = useCallback(() => {
+    if (idleTimerRef.current !== null) {
+      clearTimeout(idleTimerRef.current);
+      idleTimerRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      cancelRaf(swapRafRef);
+      clearTimer();
+      clearIdleTimer();
+    };
+  }, [clearTimer, clearIdleTimer]);
+
   const setSwapProgress = useCallback((progress: number) => {
     if (!mountedRef.current) return;
     setSwap((current) => (current ? { ...current, progress } : current));
   }, []);
 
-  const advance = useCallback(async () => {
-    if (advancingRef.current) return;
+  const advance = useCallback(async (source: WindSource) => {
+    if (advancingRef.current) return false;
     advancingRef.current = true;
     cancelRaf(swapRafRef);
     try {
@@ -174,48 +199,119 @@ export function HasselbladHero() {
         await animateProgress(swapRafRef, CROSSFADE_MS, setSwapProgress);
       }
 
+      const stripIndex = stripIndexAfterWind(
+        intentionalRef.current,
+        toIndex,
+        source,
+      );
       indexRef.current = toIndex;
+      intentionalRef.current = stripIndex;
       if (mountedRef.current) {
         setIndex(toIndex);
+        setIntentionalIndex(stripIndex);
         setSwap(null);
       }
+      return true;
     } finally {
       advancingRef.current = false;
     }
   }, [setSwapProgress]);
 
-  const scheduleNextRef = useRef<() => void>(() => {});
+  useEffect(() => {
+    advanceRef.current = advance;
+  }, [advance]);
+
+  /**
+   * Arms the normal gap between auto-winds. A reel hold skips this;
+   * when that hold ends, the idle timer starts the next wind itself.
+   */
+  const armAutoWind = useCallback(() => {
+    clearTimer();
+    if (overlayOpenRef.current) return;
+    if (reelHoldsAutoWind(holdRef.current, Date.now())) return;
+    timerRef.current = setTimeout(() => {
+      timerRef.current = null;
+      void (async () => {
+        const started = await advanceRef.current("auto");
+        if (started && mountedRef.current) armAutoWindRef.current();
+      })();
+    }, AUTO_WIND_MS);
+  }, [clearTimer]);
 
   useEffect(() => {
-    scheduleNextRef.current = () => {
-      clearTimer();
-      if (overlayOpenRef.current) return;
-      timerRef.current = setTimeout(() => {
-        void (async () => {
-          await advance();
-          scheduleNextRef.current();
-        })();
-      }, AUTO_WIND_MS);
-    };
-  }, [advance, clearTimer]);
+    armAutoWindRef.current = armAutoWind;
+  }, [armAutoWind]);
+
+  /**
+   * Cancel a pending auto-wind. While the reel is focused, stay paused.
+   * After wheel, touch, keys, or scroll, start the next auto-wind once
+   * REEL_IDLE_MS has passed with no further input.
+   */
+  const holdAutoWind = useCallback(() => {
+    clearTimer();
+    clearIdleTimer();
+    if (overlayOpenRef.current) return;
+    const now = Date.now();
+    if (!reelHoldsAutoWind(holdRef.current, now)) {
+      armAutoWind();
+      return;
+    }
+    const lastInputAt = holdRef.current.lastInputAt;
+    if (holdRef.current.focused || lastInputAt == null) return;
+    const remaining = REEL_IDLE_MS - (now - lastInputAt);
+    idleTimerRef.current = setTimeout(() => {
+      idleTimerRef.current = null;
+      void (async () => {
+        if (overlayOpenRef.current) return;
+        if (reelHoldsAutoWind(holdRef.current, Date.now())) return;
+        const started = await advanceRef.current("auto");
+        if (started && mountedRef.current) armAutoWindRef.current();
+      })();
+    }, Math.max(0, remaining));
+  }, [armAutoWind, clearIdleTimer, clearTimer]);
+
+  useEffect(() => {
+    holdAutoWindRef.current = holdAutoWind;
+  }, [holdAutoWind]);
 
   useEffect(() => {
     if (overlayOpen) {
       clearTimer();
-      return clearTimer;
+      clearIdleTimer();
+      return () => {
+        clearTimer();
+        clearIdleTimer();
+      };
     }
-    scheduleNextRef.current();
-    return clearTimer;
-  }, [overlayOpen, clearTimer]);
+    holdAutoWind();
+    return () => {
+      clearTimer();
+      clearIdleTimer();
+    };
+  }, [overlayOpen, holdAutoWind, clearTimer, clearIdleTimer]);
 
   const onCrankClick = useCallback(() => {
     if (advancingRef.current) return;
     clearTimer();
+    clearIdleTimer();
     void (async () => {
-      await advance();
-      scheduleNextRef.current();
+      const started = await advance("intentional");
+      if (started && mountedRef.current) holdAutoWindRef.current();
     })();
-  }, [advance, clearTimer]);
+  }, [advance, clearIdleTimer, clearTimer]);
+
+  const onReelInteract = useCallback(() => {
+    holdRef.current = { ...holdRef.current, lastInputAt: Date.now() };
+    holdAutoWindRef.current();
+  }, []);
+
+  const onReelFocusChange = useCallback((focused: boolean) => {
+    holdRef.current = {
+      focused,
+      lastInputAt: focused ? holdRef.current.lastInputAt : Date.now(),
+    };
+    holdAutoWindRef.current();
+  }, []);
 
   const onGlassClick = useCallback(() => {
     setOverlayOpen(true);
@@ -227,6 +323,7 @@ export function HasselbladHero() {
   );
 
   const settled = SECTIONS[index] ?? SECTIONS[0];
+  const stripSection = SECTIONS[intentionalIndex] ?? SECTIONS[0];
   const outgoing = swap ? (SECTIONS[swap.fromIndex] ?? settled) : settled;
   const incoming = swap ? (SECTIONS[swap.toIndex] ?? null) : null;
 
@@ -252,7 +349,11 @@ export function HasselbladHero() {
           boxRef={vfRef}
         />
         <DialWindLayer videoRef={videoRef} reducedMotion={reducedMotion} />
-        <FilmReel section={settled} />
+        <FilmReel
+          section={stripSection}
+          onInteract={onReelInteract}
+          onFocusChange={onReelFocusChange}
+        />
         <HitTargets
           onCrankClick={onCrankClick}
           onGlassClick={onGlassClick}

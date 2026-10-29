@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import { FILM_FRAMES } from "@/data/filmReel";
 import { framesForSection } from "@/lib/filmReel";
 import type { Section } from "@/lib/sections";
@@ -8,7 +7,23 @@ import styles from "./hasselblad.module.css";
 
 export type FilmReelProps = {
   section: Section;
+  /** Wheel, touch, scroll, or arrow keys on the strip. */
+  onInteract?: () => void;
+  /** Focus holds auto-wind until blur, separate from a transient input. */
+  onFocusChange?: (focused: boolean) => void;
 };
+
+const SCROLL_KEYS = new Set([
+  "ArrowUp",
+  "ArrowDown",
+  "ArrowLeft",
+  "ArrowRight",
+  "PageUp",
+  "PageDown",
+  "Home",
+  "End",
+  " ",
+]);
 
 /**
  * Vertical amber film beside the camera body.
@@ -17,17 +32,16 @@ export type FilmReelProps = {
  * A mask on the viewport — not on the scrolling strip — fades the ends
  * into the black page while frames move underneath. No scroll-snap and
  * no transform hijack, so flick momentum and reduced-motion stay intact.
- * The list is the settled viewfinder section, newest publish date first.
+ *
+ * The list is the last section the user deliberately chose, newest
+ * publish date first. Auto-wind does not pass a new section in. A
+ * deliberate change replaces that list only. This component never writes
+ * `scrollTop`, so a section change cannot yank an in-progress or resting
+ * scroll. The same scroller stays mounted; the browser clamps the offset
+ * if the new strip is shorter than the previous one.
  */
-export function FilmReel({ section }: FilmReelProps) {
-  const scrollRef = useRef<HTMLDivElement>(null);
+export function FilmReel({ section, onInteract, onFocusChange }: FilmReelProps) {
   const frames = framesForSection(FILM_FRAMES, section.id);
-
-  useEffect(() => {
-    const node = scrollRef.current;
-    if (!node) return;
-    node.scrollTop = 0;
-  }, [section.id]);
 
   if (frames.length === 0) return null;
 
@@ -35,11 +49,18 @@ export function FilmReel({ section }: FilmReelProps) {
     <aside className={styles.reelColumn} data-section-id={section.id}>
       <div className={styles.reelViewport}>
         <div
-          ref={scrollRef}
           className={styles.reelScroll}
           tabIndex={0}
           role="region"
           aria-label={`${section.label} film, newest first`}
+          onWheel={() => onInteract?.()}
+          onTouchStart={() => onInteract?.()}
+          onScroll={() => onInteract?.()}
+          onKeyDown={(event) => {
+            if (SCROLL_KEYS.has(event.key)) onInteract?.();
+          }}
+          onFocus={() => onFocusChange?.(true)}
+          onBlur={() => onFocusChange?.(false)}
         >
           <div className={styles.reelStrip}>
             <div className={styles.reelRailLeft} aria-hidden="true" />
