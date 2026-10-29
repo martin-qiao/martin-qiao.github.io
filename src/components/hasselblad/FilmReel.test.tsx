@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 
 import { act } from "react";
+import { vi } from "vitest";
 import { createRoot, type Root } from "react-dom/client";
 import { FILM_FRAMES } from "@/data/filmReel";
 import { SECTIONS } from "@/data/sections";
@@ -59,6 +60,51 @@ test("a section swap keeps the reel scroll offset and shows the new frames", asy
     );
     expect(writes).toEqual([]);
     expect(scroller.scrollTop).toBe(240);
+  } finally {
+    await act(async () => {
+      root.unmount();
+    });
+    host.remove();
+  }
+});
+
+test("wheel, touch, scroll, and arrow keys report reel use; other keys do not", async () => {
+  const host = document.createElement("div");
+  document.body.appendChild(host);
+  const root = createRoot(host);
+  const onInteract = vi.fn();
+  const onFocusChange = vi.fn();
+
+  try {
+    await act(async () => {
+      root.render(
+        <FilmReel
+          section={SECTIONS[0]}
+          onInteract={onInteract}
+          onFocusChange={onFocusChange}
+        />,
+      );
+    });
+    const scroller = host.querySelector<HTMLDivElement>('[role="region"]');
+    expect(scroller).not.toBeNull();
+    if (!scroller) return;
+
+    await act(async () => {
+      scroller.dispatchEvent(new WheelEvent("wheel", { bubbles: true, deltaY: 40 }));
+      scroller.dispatchEvent(new Event("touchstart", { bubbles: true }));
+      scroller.dispatchEvent(new Event("scroll", { bubbles: true }));
+      scroller.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
+      );
+      scroller.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "a", bubbles: true }),
+      );
+      scroller.dispatchEvent(new FocusEvent("focusin", { bubbles: true }));
+      scroller.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+    });
+
+    expect(onInteract).toHaveBeenCalledTimes(4);
+    expect(onFocusChange.mock.calls).toEqual([[true], [false]]);
   } finally {
     await act(async () => {
       root.unmount();
