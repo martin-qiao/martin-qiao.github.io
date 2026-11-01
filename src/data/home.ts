@@ -59,8 +59,6 @@ export const LENS = {
   id: "through-the-lens",
   eyebrow: "Through The Lens",
   headline: "Frames chosen like a roll — one viewfinder, many frames.",
-  caption:
-    "Wind the crank to step the gallery. Scroll the film strip for titles ranked by date.",
 } as const;
 
 export const NOTES = {
