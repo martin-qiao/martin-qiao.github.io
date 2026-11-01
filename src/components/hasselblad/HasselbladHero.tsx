@@ -238,32 +238,34 @@ export function HasselbladHero() {
         data-reduced-motion={reducedMotion ? "true" : "false"}
         data-vf-frame="0"
       >
-        {/* eslint-disable-next-line @next/next/no-img-element -- static base still; layered composite */}
-        <img
-          className={styles.fill}
-          src={BASE_SRC}
-          alt=""
-          draggable={false}
-        />
-        <ViewfinderLayer
-          section={outgoing}
-          incoming={incoming}
-          progress={swap?.progress ?? 0}
-          boxRef={vfRef}
-        />
-        <DialWindLayer videoRef={videoRef} reducedMotion={reducedMotion} />
-        <FilmReel section={settled} />
-        <HitTargets
-          onCrankClick={onCrankClick}
-          onGlassClick={onGlassClick}
-          glassRef={glassRef}
-        />
-        {overlayOpen ? (
-          <SectionOverlay
-            section={settled}
-            onClose={() => setOverlayOpen(false)}
+        <div className={styles.plate}>
+          {/* eslint-disable-next-line @next/next/no-img-element -- static base still; layered composite */}
+          <img
+            className={styles.fill}
+            src={BASE_SRC}
+            alt=""
+            draggable={false}
           />
-        ) : null}
+          <ViewfinderLayer
+            section={outgoing}
+            incoming={incoming}
+            progress={swap?.progress ?? 0}
+            boxRef={vfRef}
+          />
+          <DialWindLayer videoRef={videoRef} reducedMotion={reducedMotion} />
+          <HitTargets
+            onCrankClick={onCrankClick}
+            onGlassClick={onGlassClick}
+            glassRef={glassRef}
+          />
+          {overlayOpen ? (
+            <SectionOverlay
+              section={settled}
+              onClose={() => setOverlayOpen(false)}
+            />
+          ) : null}
+        </div>
+        <FilmReel section={settled} />
       </div>
     </div>
   );
