@@ -19,7 +19,6 @@ export function LensChapter() {
         <div className={styles.lensStage}>
           <HasselbladHero />
         </div>
-        <p className={styles.caption}>{LENS.caption}</p>
       </div>
     </section>
   );

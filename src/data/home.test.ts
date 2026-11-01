@@ -41,9 +41,8 @@ test("lens, notes, fidget, and footer copy match the brief", () => {
   expect(LENS.headline).toBe(
     "Frames chosen like a roll — one viewfinder, many frames.",
   );
-  expect(LENS.caption).toBe(
-    "Wind the crank to step the gallery. Scroll the film strip for titles ranked by date.",
-  );
+  expect(lensSource).not.toContain("Wind the crank");
+  expect(lensSource).not.toContain("caption");
   expect(NOTES.posts.map((post) => post.title)).toEqual([
     "Scroll-linked animation without jank",
     "Why a viewfinder works as navigation",
@@ -73,4 +72,14 @@ test("camera stage is embedded, with the 5cm nudge kept", () => {
   expect(heroCss).toContain("--camera-nudge: 5cm");
   expect(heroCss).not.toMatch(/\.frame\s*\{[^}]*position:\s*fixed/);
   expect(heroCss).toMatch(/\.frame\s*\{[^}]*position:\s*absolute/);
+});
+
+test("lens title stays one line and the stage is no longer capped at 58dvh", () => {
+  const homeCss = readFileSync(
+    new URL("../components/home/home.module.css", import.meta.url),
+    "utf8",
+  );
+  expect(homeCss).toMatch(/\.lensHeadline\s*\{[^}]*white-space:\s*nowrap/);
+  expect(homeCss).not.toContain("58dvh");
+  expect(homeCss).not.toContain("Wind the crank");
 });

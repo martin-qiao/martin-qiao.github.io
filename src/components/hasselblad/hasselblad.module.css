@@ -520,7 +520,7 @@
     position: relative;
     inset: auto;
     flex: 0 1 auto;
-    width: min(100%, calc(56cqh * 1280 / 720));
+    width: min(100%, calc(62cqh * 1280 / 720));
     height: auto;
     aspect-ratio: 1280 / 720;
     overflow: hidden;
@@ -531,8 +531,8 @@
     position: relative;
     left: auto;
     top: auto;
-    width: min(42%, 8.75rem);
-    height: min(34%, 12.5rem);
+    width: min(54%, 12rem);
+    height: min(40%, 16rem);
     flex: 0 0 auto;
   }
 }
