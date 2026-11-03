@@ -26,6 +26,10 @@ Do not bake section photos into the wind MP4 — keep the layered composite.
 
 See [`docs/superpowers/specs/2026-10-26-hasselblad-homepage-design.md`](docs/superpowers/specs/2026-10-26-hasselblad-homepage-design.md).
 
+## Editorial CMS
+
+`/admin` edits About, Lens, Notes, and Fidget. Published copy is stored in Supabase; photos go to Vercel Blob. Without those env vars the homepage keeps the mocks in `src/data/`. Setup, the SQL migration, and env vars are in [`docs/cms.md`](docs/cms.md).
+
 ## Run
 
 ```bash

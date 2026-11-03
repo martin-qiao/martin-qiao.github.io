@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { FILM_FRAMES } from "@/data/filmReel";
-import { framesForSection } from "@/lib/filmReel";
+import { framesForSection, type FilmFrame } from "@/lib/filmReel";
 import type { Section } from "@/lib/sections";
 import styles from "./hasselblad.module.css";
 
 export type FilmReelProps = {
   section: Section;
+  frames: readonly FilmFrame[];
 };
 
 /**
@@ -19,9 +19,9 @@ export type FilmReelProps = {
  * no transform hijack, so flick momentum and reduced-motion stay intact.
  * The list is the settled viewfinder section, newest publish date first.
  */
-export function FilmReel({ section }: FilmReelProps) {
+export function FilmReel({ section, frames }: FilmReelProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const frames = framesForSection(FILM_FRAMES, section.id);
+  const visible = framesForSection(frames, section.id);
 
   useEffect(() => {
     const node = scrollRef.current;
@@ -29,7 +29,7 @@ export function FilmReel({ section }: FilmReelProps) {
     node.scrollTop = 0;
   }, [section.id]);
 
-  if (frames.length === 0) return null;
+  if (visible.length === 0) return null;
 
   return (
     <aside className={styles.reelColumn} data-section-id={section.id}>
@@ -45,7 +45,7 @@ export function FilmReel({ section }: FilmReelProps) {
             <div className={styles.reelRailLeft} aria-hidden="true" />
             <div className={styles.reelRailRight} aria-hidden="true" />
             <ol className={styles.reelList}>
-              {frames.map((frame) => (
+              {visible.map((frame) => (
                 <li
                   key={frame.id}
                   className={styles.reelFrame}
