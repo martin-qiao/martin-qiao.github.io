@@ -171,6 +171,25 @@
   background: linear-gradient(165deg, #efd3b0 0%, #c48b55 48%, #6d4c32 100%);
 }
 
+.photoTile {
+  background: #2c2c30;
+}
+
+.tileImage,
+.cardImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.cardImage {
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: 12px;
+  margin-bottom: 0.8rem;
+}
+
 .tileLabel {
   position: absolute;
   left: 0.9rem;

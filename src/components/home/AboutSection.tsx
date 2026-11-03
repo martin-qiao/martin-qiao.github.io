@@ -1,37 +1,42 @@
-import { ABOUT } from "@/data/home";
+import { Markdown } from "@/components/markdown/Markdown";
+import type { AboutView } from "@/lib/content/assemble";
 import styles from "./home.module.css";
 
-const TONE: Record<(typeof ABOUT.portraits)[number]["tone"], string> = {
+const TONE = {
   harbor: styles.harbor,
   studio: styles.studio,
   weekend: styles.weekend,
-};
+} as const;
 
-export function AboutSection() {
+export function AboutSection({ about }: { about: AboutView }) {
   return (
     <section
-      id={ABOUT.id}
+      id={about.id}
       className={`${styles.chapter} ${styles.about}`}
       aria-labelledby="about-heading"
     >
       <div className={styles.inner}>
-        <p className={styles.eyebrow}>{ABOUT.eyebrow}</p>
+        <p className={styles.eyebrow}>{about.eyebrow}</p>
         <h1 id="about-heading" className={styles.headline}>
-          {ABOUT.headline}
+          {about.headline}
         </h1>
-        <p className={styles.body}>{ABOUT.body}</p>
+        <Markdown source={about.body} className={styles.body} />
         <ul className={styles.portraits}>
-          {ABOUT.portraits.map((portrait) => (
+          {about.portraits.map((portrait) => (
             <li
               key={portrait.id}
-              className={`${styles.tile} ${TONE[portrait.tone]}`}
+              className={`${styles.tile} ${portrait.tone ? TONE[portrait.tone] : styles.photoTile}`}
             >
+              {portrait.imageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element -- CMS blob URLs are arbitrary hosts
+                <img className={styles.tileImage} src={portrait.imageUrl} alt="" />
+              ) : null}
               <span className={styles.tileLabel}>{portrait.label}</span>
             </li>
           ))}
         </ul>
-        <a className={styles.pill} href={ABOUT.cta.href}>
-          {ABOUT.cta.label}
+        <a className={styles.pill} href={about.cta.href}>
+          {about.cta.label}
         </a>
       </div>
     </section>

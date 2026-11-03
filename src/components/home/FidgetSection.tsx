@@ -1,23 +1,35 @@
-import { FIDGET } from "@/data/home";
+import type { FidgetView } from "@/lib/content/assemble";
 import styles from "./home.module.css";
 
-export function FidgetSection() {
+export function FidgetSection({ fidget }: { fidget: FidgetView }) {
   return (
     <section
-      id={FIDGET.id}
+      id={fidget.id}
       className={`${styles.chapter} ${styles.fidget}`}
       aria-labelledby="fidget-heading"
     >
       <div className={styles.inner}>
-        <p className={styles.eyebrow}>{FIDGET.eyebrow}</p>
+        <p className={styles.eyebrow}>{fidget.eyebrow}</p>
         <h2 id="fidget-heading" className={styles.headline}>
-          {FIDGET.headline}
+          {fidget.headline}
         </h2>
-        <p className={styles.body}>{FIDGET.body}</p>
+        <p className={styles.body}>{fidget.body}</p>
         <div className={`${styles.grid} ${styles.fidgetGrid}`}>
-          {FIDGET.tiles.map((tile) => (
+          {fidget.tiles.map((tile) => (
             <article key={tile.id} className={styles.card}>
-              <h3 className={styles.cardTitle}>{tile.title}</h3>
+              {tile.imageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element -- CMS blob URLs are arbitrary hosts
+                <img className={styles.cardImage} src={tile.imageUrl} alt="" />
+              ) : null}
+              <h3 className={styles.cardTitle}>
+                {tile.productUrl ? (
+                  <a href={tile.productUrl} rel="noreferrer">
+                    {tile.title}
+                  </a>
+                ) : (
+                  tile.title
+                )}
+              </h3>
               <p className={styles.cardBody}>{tile.summary}</p>
             </article>
           ))}

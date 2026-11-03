@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { FILM_FRAMES } from "@/data/filmReel";
 import { SECTIONS } from "@/data/sections";
+import type { FilmFrame } from "@/lib/filmReel";
 import { BASE_STILL_SRC } from "@/lib/hasselbladAssets";
 import { nextSectionIndex } from "@/lib/sections";
 import { VF_FPS, VF_FRAME_COUNT } from "@/lib/vfTrack";
@@ -96,7 +98,11 @@ function followWind(
   });
 }
 
-export function HasselbladHero() {
+export function HasselbladHero({
+  frames = FILM_FRAMES,
+}: {
+  frames?: readonly FilmFrame[];
+}) {
   const [index, setIndex] = useState(0);
   const [swap, setSwap] = useState<VfSwap | null>(null);
   const [overlayOpen, setOverlayOpen] = useState(false);
@@ -265,7 +271,7 @@ export function HasselbladHero() {
             />
           ) : null}
         </div>
-        <FilmReel section={settled} />
+        <FilmReel section={settled} frames={frames} />
       </div>
     </div>
   );

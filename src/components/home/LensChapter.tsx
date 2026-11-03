@@ -1,8 +1,9 @@
 import { HasselbladHero } from "@/components/hasselblad/HasselbladHero";
 import { LENS } from "@/data/home";
+import type { FilmFrame } from "@/lib/filmReel";
 import styles from "./home.module.css";
 
-export function LensChapter() {
+export function LensChapter({ frames }: { frames: readonly FilmFrame[] }) {
   return (
     <section
       id={LENS.id}
@@ -17,7 +18,7 @@ export function LensChapter() {
           </h2>
         </div>
         <div className={styles.lensStage}>
-          <HasselbladHero />
+          <HasselbladHero frames={frames} />
         </div>
       </div>
     </section>
